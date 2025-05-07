@@ -2,12 +2,12 @@ apiVersion: v1
 entries:
   meshcentral:
   - apiVersion: v2
-    appVersion: 1.1.45
-    created: "2025-05-07T15:49:09.177246323Z"
+    appVersion: 1.1.46
+    created: "2025-05-07T15:52:52.798059939Z"
     description: A Helm chart for deploying MeshCentral
-    digest: 695d7b17d86d03bd56b686a27a731a545ac34cb3097002221f4423f1fa3ab866
+    digest: 22a80b7e03a7ad03487a5d8cd835a18f35738cf0e4df99c087c08cebb5e4131f
     name: meshcentral
     urls:
-    - https://wrsys.github.io/MeshCentral/charts/meshcentral-1.0.0.tgz
-    version: 1.0.0
-generated: "2025-05-07T15:49:09.17666484Z"
+    - https://wrsys.github.io/MeshCentral/charts/meshcentral-2.0.0.tgz
+    version: 2.0.0
+generated: "2025-05-07T15:52:52.797327191Z"
