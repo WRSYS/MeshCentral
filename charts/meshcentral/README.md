@@ -5,8 +5,8 @@ This Helm chart deploys MeshCentral, a remote management platform, on Kubernetes
 ## Chart Details
 
 - **Chart Name**: `meshcentral`
-- **Version**: `0.3.0`
-- **App Version**: `1.1.44`
+- **Version**: `1.0.0`
+- **App Version**: `1.1.45`
 - **Description**: A Helm chart for deploying MeshCentral.
 
 ## Prerequisites
