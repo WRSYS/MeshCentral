@@ -1,0 +1,117 @@
+meshcentral:
+  image:
+    repository: ghcr.io/ylianst/meshcentral
+    tag: ""
+    pullPolicy: IfNotPresent
+
+  databaseType: none # Options: none, mariadb, mysql, postgres, sqlite3, acebase
+
+  config:
+    settings:
+      plugins: {}
+      cert: ""
+      WANonly: true
+      port: 443
+      redirPort: 80
+      agentPong: 300
+      tlsOffload: true
+      selfUpdate: false
+      allowFraming: true
+      trustedProxy: ""
+      webRTC: false
+
+    domains:
+      "": # Default domain configuration
+        allowedOrigin:
+          - ""
+        minify: true
+        newAccounts: true
+        localSessionRecording: false
+        userNameIsEmail: true
+        certUrl: ""
+
+  database:
+    mariadb:
+      enabled: false
+      secret: mariadb-secret
+      secretKeys:
+        host: host
+        user: user
+        password: password
+        database: database
+      host: ""
+      user: ""
+      password: ""
+      database: "meshcentral"
+      port: 3306
+
+    mysql:
+      enabled: false
+      secret: mysql-secret
+      secretKeys:
+        host: host
+        user: user
+        password: password
+        database: database
+      host: ""
+      user: ""
+      password: ""
+      database: "meshcentral"
+      port: 3306
+
+    postgres:
+      enabled: false
+      secret: postgres-secret
+      secretKeys:
+        host: host
+        user: user
+        password: password
+        database: database
+      host: ""
+      user: ""
+      password: ""
+      database: "meshcentral"
+      port: 5432
+
+    mongodb:
+      enabled: false
+      secret: mongodb-secret
+      secretKeys:
+        url: url
+      url: ""
+
+    sqlite:
+      enabled: false
+      filename: "meshcentral.db"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+service:
+  type: ClusterIP
+  port: 443
+
+ingress:
+  enabled: false
+  ingressClassName: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  pathType: Prefix
+
+persistence:
+  enabled: false # Enable persistence
+  existingClaim: "" # (Optional) Use an existing PersistentVolumeClaim instead of creating one
+  storageClass: "" # Storage Class to use for dynamic volume
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi # Volume size

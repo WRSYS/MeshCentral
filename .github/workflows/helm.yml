@@ -1,0 +1,97 @@
+name: Update Helm Chart
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "package.json"
+
+jobs:
+  update-helm-chart:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+
+      - name: Get version from package.json
+        id: get-version
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          echo "version=$VERSION" >> $GITHUB_ENV
+
+      - name: Determine version change type
+        id: determine-change
+        run: |
+          git fetch --tags
+          PREVIOUS_VERSION=$(git tag --sort=-v:refname | head -n 1)
+          if [ -z "$PREVIOUS_VERSION" ]; then
+            echo "change_type=major" >> $GITHUB_ENV
+          else
+            CHANGE_TYPE=$(npx semver-diff $PREVIOUS_VERSION ${{ env.version }})
+            echo "change_type=$CHANGE_TYPE" >> $GITHUB_ENV
+          fi
+
+      - name: Update Helm chart version
+        run: |
+          CHART_FILE="charts/meshcentral/Chart.yaml"
+          NEW_VERSION="${{ env.version }}"
+          CHANGE_TYPE="${{ env.change_type }}"
+
+          # Update appVersion
+          yq eval ".appVersion = \"$NEW_VERSION\"" -i $CHART_FILE
+
+          # Update chart version
+          CURRENT_CHART_VERSION=$(yq eval ".version" $CHART_FILE)
+          UPDATED_CHART_VERSION=$(npx semver $CURRENT_CHART_VERSION --increment $CHANGE_TYPE)
+          yq eval ".version = \"$UPDATED_CHART_VERSION\"" -i $CHART_FILE
+
+      - name: Update README versions
+        run: |
+          README_FILE="charts/meshcentral/README.md"
+          NEW_VERSION="${{ env.version }}"
+          UPDATED_CHART_VERSION=$(yq eval ".version" charts/meshcentral/Chart.yaml)
+
+          # Update App Version
+          sed -i.bak "s|^\\- \\*\\*App Version\\*\\*:.*|\\- **App Version**: \`$NEW_VERSION\`|" $README_FILE
+
+          # Update Chart Version
+          sed -i.bak "s|^\\- \\*\\*Version\\*\\*:.*|\\- **Version**: \`$UPDATED_CHART_VERSION\`|" $README_FILE
+
+          # Clean up backup file
+          rm -f $README_FILE.bak
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add charts/meshcentral/Chart.yaml charts/meshcentral/README.md
+          git commit -m "Update Helm chart and README to version ${{ env.version }}"
+          git push
+
+      - name: Publish Helm chart to gh-pages
+        run: |
+          # Package the Helm chart
+          helm package charts/meshcentral --destination ./helm-packages
+
+          # Generate Helm repo index under /charts path
+          helm repo index ./helm-packages --url https://wrsys.github.io/MeshCentral/charts
+
+          # Switch to gh-pages branch
+          git fetch origin gh-pages
+          git checkout gh-pages
+
+          # Move Helm packages to /charts directory
+          mkdir -p charts
+          mv ./helm-packages/* charts/
+
+          # Commit and push changes
+          git add charts/
+          git commit -m "Publish Helm chart version ${{ env.version }} under /charts path"
+          git push
